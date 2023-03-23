@@ -8,19 +8,29 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-public class Ticket {
+@Table(name="usertable")
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    @Column(name = "name")
-    private String customerName;
-    private String subject;
+
+    @Column(name = "username")
+    private String userName;
+    private String comment;
     private String body;
 
-    @OneToMany(mappedBy = "ticket", fetch = FetchType.EAGER,
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER,
             cascade = CascadeType.ALL, orphanRemoval = true)
     @Fetch(FetchMode.SUBSELECT)
     private List<Attachment> attachments = new ArrayList<>();
+
+ /*
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER,
+            cascade = CascadeType.ALL, orphanRemoval = true)
+    @Fetch(FetchMode.SUBSELECT)
+    private List<Comment> commentList = new ArrayList<>();
+
+  */
 
     // getters and setters of all properties
     public long getId() {
@@ -31,20 +41,20 @@ public class Ticket {
         this.id = id;
     }
 
-    public String getCustomerName() {
-        return customerName;
+    public String getUserName() {
+        return userName;
     }
 
-    public void setCustomerName(String customerName) {
-        this.customerName = customerName;
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
-    public String getSubject() {
-        return subject;
+    public String getComment() {
+        return comment;
     }
 
-    public void setSubject(String subject) {
-        this.subject = subject;
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
     public String getBody() {
@@ -64,9 +74,17 @@ public class Ticket {
     }
 
     public void deleteAttachment(Attachment attachment) {
-        attachment.setTicket(null);
+        attachment.setUser(null);
         this.attachments.remove(attachment);
     }
+    /*
+    public void deleteComment(Comment comment) {
+        comment.setUser(null);
+        this.commentList.remove(comment);
+    }
+    */
 }
+
+
 
 

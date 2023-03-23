@@ -1,2 +1,2 @@
-INSERT INTO TICKET (BODY, NAME, SUBJECT)
-    VALUES ('This is a test message.', 'Keith', 'Test subject');
+INSERT INTO USERTABLE (BODY, USERNAME, COMMENT)
+    VALUES ('This is a test message.', 'Keith', 'Test comment');

@@ -2,7 +2,6 @@ package hkmu.comps380f.model;
 
 import jakarta.persistence.*;
 import org.hibernate.annotations.ColumnDefault;
-
 import java.util.UUID;
 
 @Entity
@@ -23,14 +22,14 @@ public class Attachment {
     @Lob
     private byte[] contents;
 
-    @Column(name = "ticket_id", insertable=false, updatable=false)
-    private long ticketId;
+    @Column(name = "user_id", insertable=false, updatable=false)
+    private long userId;
 
     @ManyToOne
-    @JoinColumn(name = "ticket_id")
-    private Ticket ticket;
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    // getters and setters of all properties
+    //Getter and setter
     public UUID getId() {
         return id;
     }
@@ -63,20 +62,19 @@ public class Attachment {
         this.contents = contents;
     }
 
-    public long getTicketId() {
-        return ticketId;
+    public long getUserId() {
+        return userId;
     }
 
-    public void setTicketId(long ticketId) {
-        this.ticketId = ticketId;
+    public void setUserId(long userId) {
+        this.userId = userId;
     }
 
-    public Ticket getTicket() {
-        return ticket;
+    public User getUser() {
+        return user;
     }
 
-    public void setTicket(Ticket ticket) {
-        this.ticket = ticket;
+    public void setUser(User user) {
+        this.user = user;
     }
 }
-
