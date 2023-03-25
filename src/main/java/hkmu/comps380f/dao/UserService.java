@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 
@@ -96,6 +97,7 @@ public class UserService {
                     && Attachment.getContents().length > 0) {
                 user.getAttachments().add(Attachment);
             }
+
         }
         User saveduser = userRepository.save(user);
         return saveduser.getId();

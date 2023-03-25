@@ -90,6 +90,7 @@ public class UserController {
         User user = userService.getUser(userId);
         model.addAttribute("userId", userId);
         model.addAttribute("user", user);
+
         return "view";
     }
 

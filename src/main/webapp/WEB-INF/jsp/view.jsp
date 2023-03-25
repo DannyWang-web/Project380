@@ -14,7 +14,7 @@
         <c:if test="${!status.first}">, </c:if>
         <a href="<c:url value="/user/${userId}/attachment/${attachment.id}" />">
             <c:out value="${attachment.name}"/></a>
-        [<a href="<c:url value="/user/${userId}/delete/${attachmentLecture.id}"/>">Delete</a>]
+        [<a href="<c:url value="/user/${userId}/delete/${attachment.id}"/>">Delete</a>]
     </c:forEach><br/><br/>
 </c:if>
 <a href="<c:url value="/user" />">Return to list users</a>
