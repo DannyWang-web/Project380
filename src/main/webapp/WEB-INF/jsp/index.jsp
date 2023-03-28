@@ -9,46 +9,47 @@
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
-<script>
-
-</script>
 <html>
 <head>
     <title>This is the index page</title>
-    This is the User page  </br></br>
-
-    <c:choose>
-        <c:when test="${fn:length(userDatabase) == 0}">
-            <i>There are no user in the system.</i>
-        </c:when>
-        <c:otherwise>
-            <c:forEach items="${userDatabase}" var="user">
-                User: <a href="<c:url value="/user/view/${user.id}" />">${user.userName}</a>
-                </br>
-                Comment: <c:out value="${user.comment}"/>
-                </br>
-                <c:if test="${!empty user.attachments}">
-                    Photo:
-                    <c:forEach items="${user.attachments}" var="attachment" varStatus="status">
-                        <c:if test="${!status.first}">, </c:if>
-                        </br>
-                        <img style="width:400px;height:200px" src="<c:url value="/user/${user.id}/attachment/${attachment.id}" />" />
-                        </br>
-                            <a href="<c:url value="/user/${user.id}/attachment/${attachment.id}"/>">
-                                <c:out value="${attachment.name}"/>
-                            </a>
-                        [<a href="<c:url value="/user/${user.id}/delete/${attachment.id}"/>">DeletePhoto</a>]
-                        <br/>
-                        [<a href="<c:url value="/user/delete/${user.id}" />">DeleteUser</a>]
-                    </c:forEach><br/>
-                </c:if>
-                </br> </br>
-            </c:forEach>
-        </c:otherwise>
-    </c:choose>
-
+    <a href="<c:url value="/photo/addPhoto"/>"> Upload new photo </a>
+    </br></br>
 </head>
-<body>
 
+<body>
+<c:choose>
+    <c:when test="${fn:length(userDatabase) == 0}">
+        <i>There are no user in the system.</i>
+    </c:when>
+
+    <c:otherwise>
+        <c:forEach items="${userDatabase}" var="user">
+            User: <a href="<c:url value="/user/view/${user.userId}" />">${user.userName}</a>
+            </br>
+            UserName: <c:out value="${user.userName}"/>
+            </br>
+            <c:if test="${!empty user.attachmentList}">
+                Photo:  </br>
+                <c:forEach items="${user.attachmentList}" var="attachment" varStatus="status">
+                    <a href="<c:url value="/photo/view/${attachment.attachmentId}"/>">
+<%--                        <img style="width:400px;height:200px" src="<c:url value="/user/${user.userId}/attachment/${attachment.attachmentId}" />" />--%>
+                            <img style="width:400px;height:200px" src="<c:url value="/photo/user/${user.userId}/attachment/${attachment.attachmentId}" />" />
+                    </a>
+                    </br>
+                    <a href="<c:url value="/photo/user/${user.userId}/attachment/${attachment.attachmentId}"/>">
+                        Download <c:out value="${attachment.attachmentName}"/>  </br></br>
+                    </a>
+                </c:forEach>
+                <br/><br/>
+            </c:if>
+            </br> </br>
+        </c:forEach>
+    </c:otherwise>
+</c:choose>
+
+
+
+
+</body>
 </body>
 </html>

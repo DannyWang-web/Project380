@@ -13,6 +13,6 @@
     <p>${message}</p>
   </c:otherwise>
 </c:choose>
-<a href="<c:url value="/user" />">Return to list tickets</a>
+<a href="<c:url value="/photo/index" />">Return to list tickets</a>
 </body>
 </html>
