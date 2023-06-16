@@ -11,6 +11,13 @@
   <title>Customer Support</title>
 </head>
 <body>
+
+<c:url var="logoutUrl" value="/logout"/>
+<form action="${logoutUrl}" method="post">
+  <input type="submit" value="Log out" />
+  <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+</form>
+
 <h2>Add Comment</h2>
 
 <form:form method="POST" modelAttribute="cform">

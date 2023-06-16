@@ -1,7 +1,6 @@
 package hkmu.comps380f.dao;
 
 import hkmu.comps380f.exception.AttachmentNotFound;
-import hkmu.comps380f.exception.CommentNotFound;
 import hkmu.comps380f.exception.UserNotFound;
 import hkmu.comps380f.model.Attachment;
 import hkmu.comps380f.model.Comment;
@@ -19,55 +18,16 @@ import java.util.UUID;
 @Service
 public class PhotoService {
     @Resource
-    private UserRepository uRepository;
+    private UserRepository userRepo;
     @Resource
     private AttachmentRepository aRepo;
     @Resource
     private CommentRepository cRepo;
 
     @Transactional
-    public List<User> getUsers() {
-        return uRepository.findAll();
-    }
-
-    @Transactional
-    public User getUser(long id)
-            throws UserNotFound {
-        User user = uRepository.findById(id).orElse(null);
-        if (user == null) {
-            throw new UserNotFound(id);
-        }
-        return user;
-    }
-
-    @Transactional(rollbackFor = UserNotFound.class)
-    public void deleteUser(long id) throws UserNotFound {
-        User deleteduser = uRepository.findById(id).orElse(null);
-        if (deleteduser == null) {
-            throw new UserNotFound(id);
-        }
-        uRepository.delete(deleteduser);
-    }
-
-    @Transactional
-    public long createUser(String userName, String phoneNumber, String userEmail,
-                           String userPassword, String userDescription) {
-        User user = new User();
-        user.setUserName(userName);
-        user.setPhoneNumber(phoneNumber);
-        user.setUserEmail(userEmail);
-        user.setUserPassword(userPassword);
-        user.setUserDescription(userDescription);
-        user.setAttachmentList(new ArrayList<Attachment>());
-        User saveduser = uRepository.save(user);
-        return saveduser.getUserId();
-    }
-
-
-    @Transactional
     public Attachment getAttachment(long userId, UUID attachmentId)
             throws UserNotFound, AttachmentNotFound {
-        User user = uRepository.findById(userId).orElse(null);
+        User user = userRepo.findById(userId).orElse(null);
         if (user == null) {
             throw new UserNotFound(userId);
         }
@@ -81,14 +41,14 @@ public class PhotoService {
     @Transactional(rollbackFor = AttachmentNotFound.class)
     public void deleteAttachment(long userId, UUID attachmentId)
             throws UserNotFound, AttachmentNotFound {
-        User user = uRepository.findById(userId).orElse(null);
+        User user = userRepo.findById(userId).orElse(null);
         if (user == null) {
             throw new UserNotFound(userId);
         }
         for (Attachment Attachment : user.getAttachmentList()) {
             if (Attachment.getAttachmentId().equals(attachmentId)) {
                 user.deleteAttachment(Attachment);
-                uRepository.save(user);
+                userRepo.save(user);
                 return;
             }
         }
@@ -117,13 +77,14 @@ public class PhotoService {
     }
 
     @Transactional
-    public UUID addPhoto(MultipartFile attachments, String date, String description)
+    public UUID addPhoto(MultipartFile attachments, String date, String description, User user)
             throws IOException{
         Attachment attachment = new Attachment();
         attachment.setAttachmentName(attachments.getOriginalFilename());
         attachment.setAttachmentContentType(attachments.getContentType());
         attachment.setAttachmentContent(attachments.getBytes());
         attachment.setAttachmentDescription(description);
+        attachment.setUser(user);
         attachment.setCreateTime(date);
         Attachment savedAttachment = aRepo.save(attachment);
         return savedAttachment.getAttachmentId(); // for redirect and send as parameter for pathVariable

@@ -11,12 +11,19 @@
     <title>Photo view</title>
 </head>
 <body>
+
+<c:url var="logoutUrl" value="/logout"/>
+<form action="${logoutUrl}" method="post">
+    <input type="submit" value="Log out" />
+    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+</form>
+
 <h2>
   Photo #${attachment.attachmentName}
 </h2>
 Photo description: <c:out value="${attachment.attachmentDescription}"/><br/><br/>
 Photo create time: <c:out value="${attachment.createTime}"/><br/><br/>
-<img src="<c:url value="/photo/attachment/${attachment.attachmentId}" />" />
+<img style="width:800px;height:400px" src="<c:url value="/photo/attachment/download/${attachment.attachmentId}" />" />
 <br/><br/>
 
 <h2>Comments</h2>

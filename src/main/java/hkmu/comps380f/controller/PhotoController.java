@@ -1,6 +1,7 @@
 package hkmu.comps380f.controller;
 
 import hkmu.comps380f.dao.PhotoService;
+import hkmu.comps380f.dao.UserManagementService;
 import hkmu.comps380f.exception.AttachmentNotFound;
 import hkmu.comps380f.exception.UserNotFound;
 import hkmu.comps380f.model.Attachment;
@@ -17,6 +18,9 @@ import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.view.RedirectView;
 
 import java.io.IOException;
+import java.security.Principal;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,14 +29,15 @@ import java.util.UUID;
 public class PhotoController {
     @Resource
     private PhotoService pService;
+    @Resource
+    private UserManagementService uService;
 
     @GetMapping("/index")
     public String index(ModelMap model) {
-        model.addAttribute("userDatabase", pService.getUsers());
+        model.addAttribute("userDatabase", uService.getUsers());
         model.addAttribute("attachmentDatabase", pService.getAllAttachments());
         return "index";
     }
-
 
     //From jiang ==========================================================================================
     @GetMapping("/addPhoto")
@@ -42,7 +47,6 @@ public class PhotoController {
 
     public static class photoForm {
         private MultipartFile attachments;
-        private String date;
         private String description;
 
         // Setter and getter
@@ -54,14 +58,6 @@ public class PhotoController {
             this.attachments = attachments;
         }
 
-        public String getDate() {
-            return date;
-        }
-
-        public void setDate(String date) {
-            this.date = date;
-        }
-
         public String getDescription() {
             return description;
         }
@@ -71,10 +67,23 @@ public class PhotoController {
         }
     }
 
+    // Wang: add Date, add principal object to get userId by userName
     @PostMapping("/addPhoto")
-    public View create(photoForm form) throws IOException {
+    public View create(photoForm form,  Principal principal) throws IOException, UserNotFound {
+
+        SimpleDateFormat sdf = new SimpleDateFormat();// 格式化时间
+        sdf.applyPattern("yyyy-MM-dd HH:mm:ss");// a为am/pm的标记
+        Date date = new Date();// 获取当前时间
+        System.out.println(); // 输出已经格式化的现在时间（24小时制）
+
+        User currentUser = uService.getUser(uService.getUserIdByUserName(principal.getName()));
+
+//        UUID attachmentId = pService.addPhoto(form.getAttachments(),
+//                sdf.format(date), form.getDescription(), userid);
+
         UUID attachmentId = pService.addPhoto(form.getAttachments(),
-                form.getDate(), form.getDescription());
+                sdf.format(date), form.getDescription(), currentUser);
+
         return new RedirectView("/photo/view/" + attachmentId, true);
     }
 
@@ -106,12 +115,10 @@ public class PhotoController {
     }
 
     @PostMapping("/addComment/{attachmentId}")
-    public View addComment_post(commentForm form,@PathVariable UUID attachmentId) throws AttachmentNotFound {
-        pService.addComment(attachmentId,form.getcContent(), form.getUserName());
+    public View addComment_post(commentForm form,@PathVariable UUID attachmentId,Principal principal) throws AttachmentNotFound {
+        pService.addComment(attachmentId,form.getcContent(), principal.getName());
         return new RedirectView("/photo/view/" + attachmentId, true);
     }
-
-
 
     @GetMapping("/view/{attachmentId}")
     public String photoPage(@PathVariable("attachmentId") UUID attachmentId,
@@ -123,7 +130,7 @@ public class PhotoController {
         return "photoPage";
     }
 
-    @GetMapping("attachment/{attachment:.+}")
+    @GetMapping("attachment/download/{attachment:.+}")
     public View downloadPhotoPage(@PathVariable("attachment") UUID attachmentId)
             throws UserNotFound, AttachmentNotFound {
         Attachment attachment = pService.getAttachment(attachmentId);
