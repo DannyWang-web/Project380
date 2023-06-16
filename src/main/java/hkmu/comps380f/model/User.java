@@ -11,7 +11,6 @@ import java.util.List;
 @Table(name="userTable")
 
 public class User {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
@@ -37,10 +36,33 @@ public class User {
     @Fetch(FetchMode.SUBSELECT)
     private List<Attachment> attachmentList = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER,
+            cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserRole> roles = new ArrayList<>();
 
+
+    public User() {}
+    //   From Lab --------------------------------------------------------
+//    public User(String username, String password, String[] roles) {
+//        this.username = username;
+//        this.password = "{noop}" + password;
+//        for (String role : roles) {
+//            this.roles.add(new UserRole(this, role));
+//        }
+//    }
+    public User(String userName, String phoneNumber,
+                String userEmail, String userPassword, String[] roles) {
+        this.userName = userName;
+        this.phoneNumber = phoneNumber;
+        this.userEmail = userEmail;
+        this.userDescription ="";
+        this.userPassword = "{noop}" +userPassword;
+
+        for (String role : roles) {
+            this.roles.add(new UserRole(this, role, userName));
+        }
+    }
     // getters and setters of all properties
-
-
     public long getUserId() {
         return userId;
     }
@@ -95,6 +117,14 @@ public class User {
 
     public void setAttachmentList(List<Attachment> attachmentList) {
         this.attachmentList = attachmentList;
+    }
+
+    public List<UserRole> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<UserRole> roles) {
+        this.roles = roles;
     }
 
     public void deleteAttachment(Attachment attachment) {

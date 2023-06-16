@@ -1,7 +1,12 @@
 package hkmu.comps380f.controller;
 import hkmu.comps380f.dao.PhotoService;
+import hkmu.comps380f.dao.UserManagementService;
+import hkmu.comps380f.dao.UserService;
 import hkmu.comps380f.exception.AttachmentNotFound;
+import hkmu.comps380f.exception.UserRoleException;
 import hkmu.comps380f.exception.UserNotFound;
+import hkmu.comps380f.exception.UserRoleException;
+import hkmu.comps380f.model.Comment;
 import hkmu.comps380f.model.User;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Controller;
@@ -12,6 +17,7 @@ import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.view.RedirectView;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 @Controller
@@ -20,21 +26,29 @@ public class UerController {
 
     @Resource
     private PhotoService photoService;
+    @Resource
+    private UserManagementService umService;
+    @Resource
+    private PhotoService pService;
 
-    @GetMapping("/create")
-    public ModelAndView create() {
-        return new ModelAndView("addUser", "userForm", new Form());
+    @GetMapping({"", "/", "/list"})
+    public String list(ModelMap model) throws UserRoleException {
+        List<Comment> commentList = pService.getComments();
+
+        model.addAttribute("commentList", commentList);
+        model.addAttribute("userDatabase", umService.getUsers());
+
+        return "listUser";
     }
+
     public static class Form {
         private String userName;
         private String phoneNumber;
         private String userEmail;
         private String userPassword;
-        private String userDescription;
+        private String[] roles;
 
         // Getters and Setters of customerName, comment, body, attachments
-
-
         public String getUserName() {
             return userName;
         }
@@ -67,39 +81,27 @@ public class UerController {
             this.userPassword = userPassword;
         }
 
-        public String getUserDescription() {
-            return userDescription;
-        }
+        public String[] getRoles() { return roles;}
 
-        public void setUserDescription(String userDescription) {
-            this.userDescription = userDescription;
-        }
+        public void setRoles(String[] roles) { this.roles = roles;}
     }
 
-    @PostMapping("/create")
-    public View create(Form form) throws IOException  {
-        long userId = photoService.createUser(form.getUserName(),
-                form.getPhoneNumber(), form.getUserEmail(), form.getUserPassword(),
-                form.getUserDescription());
-        return new RedirectView("/user/view/" + userId, true);
-    }
 
     @GetMapping("/view/{userId}")
     public String view(@PathVariable("userId") long userId,
                        ModelMap model)
             throws UserNotFound {
-        User user = photoService.getUser(userId);
-        model.addAttribute("userId", userId);
-        model.addAttribute("user", user);
+        User User = umService.getUser(userId);
+        model.addAttribute("User", User);
         return "userPage";
     }
 
-//    @GetMapping("/delete/{userId}")
-//    public String deleteUser(@PathVariable("userId") long userId)
-//            throws UserNotFound {
-//        photoService.deleteUser(userId);
-//        return "redirect:/user/view";
-//    }
+    @GetMapping("/delete/{userId}")
+    public String deleteUser(@PathVariable("userId") long userId)
+            throws UserNotFound {
+        umService.deleteUser(userId);
+        return "redirect:/user/list";
+    }
 
     @GetMapping("/{userId}/delete/attachment/{attachment:.+}")
     public String deleteAttachment(@PathVariable("userId") long userId,
@@ -109,7 +111,7 @@ public class UerController {
         return "redirect:/user/view" + userId;
     }
 
-    @ExceptionHandler({UserNotFound.class, AttachmentNotFound.class})
+    @ExceptionHandler({UserNotFound.class, AttachmentNotFound.class, UserRoleException.class})
     public ModelAndView error(Exception e) {
         return new ModelAndView("error", "message", e.getMessage());
     }

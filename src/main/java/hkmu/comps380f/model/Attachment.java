@@ -48,9 +48,10 @@ public class Attachment {
     @Column(name = "attachment_commentList")
     private List<Comment> commentList = new ArrayList<Comment>();
 
+    public Attachment() {
+    }
+
     //Getter and setter
-
-
     public UUID getAttachmentId() {
         return attachmentId;
     }
@@ -122,4 +123,5 @@ public class Attachment {
     public void setCommentList(List<Comment> commentList) {
         this.commentList = commentList;
     }
+
 }

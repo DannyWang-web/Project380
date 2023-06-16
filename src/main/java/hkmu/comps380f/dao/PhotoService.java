@@ -19,55 +19,16 @@ import java.util.UUID;
 @Service
 public class PhotoService {
     @Resource
-    private UserRepository uRepository;
+    private UserRepository userRepo;
     @Resource
     private AttachmentRepository aRepo;
     @Resource
     private CommentRepository cRepo;
 
     @Transactional
-    public List<User> getUsers() {
-        return uRepository.findAll();
-    }
-
-    @Transactional
-    public User getUser(long id)
-            throws UserNotFound {
-        User user = uRepository.findById(id).orElse(null);
-        if (user == null) {
-            throw new UserNotFound(id);
-        }
-        return user;
-    }
-
-    @Transactional(rollbackFor = UserNotFound.class)
-    public void deleteUser(long id) throws UserNotFound {
-        User deleteduser = uRepository.findById(id).orElse(null);
-        if (deleteduser == null) {
-            throw new UserNotFound(id);
-        }
-        uRepository.delete(deleteduser);
-    }
-
-    @Transactional
-    public long createUser(String userName, String phoneNumber, String userEmail,
-                           String userPassword, String userDescription) {
-        User user = new User();
-        user.setUserName(userName);
-        user.setPhoneNumber(phoneNumber);
-        user.setUserEmail(userEmail);
-        user.setUserPassword(userPassword);
-        user.setUserDescription(userDescription);
-        user.setAttachmentList(new ArrayList<Attachment>());
-        User saveduser = uRepository.save(user);
-        return saveduser.getUserId();
-    }
-
-
-    @Transactional
     public Attachment getAttachment(long userId, UUID attachmentId)
             throws UserNotFound, AttachmentNotFound {
-        User user = uRepository.findById(userId).orElse(null);
+        User user = userRepo.findById(userId).orElse(null);
         if (user == null) {
             throw new UserNotFound(userId);
         }
@@ -81,14 +42,14 @@ public class PhotoService {
     @Transactional(rollbackFor = AttachmentNotFound.class)
     public void deleteAttachment(long userId, UUID attachmentId)
             throws UserNotFound, AttachmentNotFound {
-        User user = uRepository.findById(userId).orElse(null);
+        User user = userRepo.findById(userId).orElse(null);
         if (user == null) {
             throw new UserNotFound(userId);
         }
         for (Attachment Attachment : user.getAttachmentList()) {
             if (Attachment.getAttachmentId().equals(attachmentId)) {
                 user.deleteAttachment(Attachment);
-                uRepository.save(user);
+                userRepo.save(user);
                 return;
             }
         }
@@ -99,6 +60,7 @@ public class PhotoService {
     @Transactional
     public List<Comment>getComments(){
         return cRepo.findAll();
+
     }
 
     @Transactional
@@ -112,24 +74,35 @@ public class PhotoService {
     }
 
     @Transactional
+    public Comment getComment(UUID commentId)
+            throws CommentNotFound {
+        Comment comment = cRepo.findById(commentId).orElse(null);
+        if (comment == null) {
+            throw new CommentNotFound(commentId);
+        }
+        return comment;
+    }
+
+    @Transactional
     public List<Attachment> getAllAttachments() {
         return aRepo.findAll();
     }
 
     @Transactional
-    public UUID addPhoto(MultipartFile attachments, String date, String description)
+    public UUID addPhoto(MultipartFile attachments, String date, String description, User user)
             throws IOException{
         Attachment attachment = new Attachment();
         attachment.setAttachmentName(attachments.getOriginalFilename());
         attachment.setAttachmentContentType(attachments.getContentType());
         attachment.setAttachmentContent(attachments.getBytes());
         attachment.setAttachmentDescription(description);
+        attachment.setUser(user);
         attachment.setCreateTime(date);
         Attachment savedAttachment = aRepo.save(attachment);
         return savedAttachment.getAttachmentId(); // for redirect and send as parameter for pathVariable
     }
     // NEW function : add comment
-    //TODO: save User Name, capture userId
+
 //    @Transactional
 //    public UUID addComment(UUID attachmentId,String cContent,String userName) throws AttachmentNotFound {
 //        Attachment attachment = aRepo.findById(attachmentId).orElse(null);
@@ -157,5 +130,41 @@ public class PhotoService {
         comment.setAttachment(attachment);
         attachment.getCommentList().add(comment);
         cRepo.save(comment);
+    }
+
+    @Transactional(rollbackFor = CommentNotFound.class)
+    public void updateComment(UUID commentId, String comment)
+            throws CommentNotFound {
+        Comment updateComment = cRepo.findById(commentId).orElse(null);
+        if (updateComment == null) {
+            throw new CommentNotFound(commentId);
+        }
+        updateComment.setCommentContent(comment);
+        cRepo.save(updateComment);
+    }
+
+    @Transactional(rollbackFor = CommentNotFound.class)
+    public void updateAttachmentDescription(UUID attachmentId, String description)
+            throws AttachmentNotFound {
+        Attachment updateDescription = aRepo.findById(attachmentId).orElse(null);
+        if (updateDescription == null) {
+            throw new AttachmentNotFound(attachmentId);
+        }
+        updateDescription.setAttachmentDescription(description);
+        aRepo.save(updateDescription);
+    }
+
+    @Transactional(rollbackFor = CommentNotFound.class)
+    public void deleteComment(UUID commentId) throws CommentNotFound {
+        Comment deleteComment = cRepo.findById(commentId).orElse(null);
+        if (deleteComment == null) {
+            throw new CommentNotFound(commentId);
+        }
+        cRepo.deleteCommentByCommentId(commentId);
+    }
+    @Transactional
+    public List<String> getCommentContentByName(String name) {
+        List<String> commentContent = cRepo.readCommentByUserName(name);
+        return commentContent;
     }
 }

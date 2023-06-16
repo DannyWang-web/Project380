@@ -8,7 +8,6 @@ import java.util.UUID;
 @Entity
 @Table(name="commentTable")
 public class Comment {
-
     @Id
     @GeneratedValue
     @ColumnDefault("random_uuid()")
